@@ -53,53 +53,75 @@ func renderArt(input string, banner [95][8]string) string {
 	return b.String()
 }
 
-func parseArgs(args []string) (color, substr, input, banner string, ok bool) {
+func parseArgs(args []string) (color, substr, align, input, banner string, ok bool) {
+	align = "left"
 	if len(args) == 0 {
-		return "", "", "", "", false
+		return "", "", "", "", "", false
 	}
 
-	if strings.HasPrefix(args[0], "--color=") {
-		color = args[0][len("--color="):]
-		if color == "" {
-			return "", "", "", "", false
+	flagsConsumed := 0
+	for i, a := range args {
+		if !strings.HasPrefix(a, "--") {
+			break
 		}
-		args = args[1:]
-	} else if strings.HasPrefix(args[0], "--color") {
-		return "", "", "", "", false
+		flagsConsumed = i + 1
+
+		if strings.HasPrefix(a, "--color=") {
+			if color != "" {
+				return "", "", "", "", "", false
+			}
+			color = a[len("--color="):]
+			if color == "" {
+				return "", "", "", "", "", false
+			}
+		} else if strings.HasPrefix(a, "--align=") {
+			align = a[len("--align="):]
+			if align == "" {
+				return "", "", "", "", "", false
+			}
+		} else if strings.HasPrefix(a, "--align") || strings.HasPrefix(a, "--color") {
+			return "", "", "", "", "", false
+		} else if !strings.Contains(a, "=") {
+			return "", "", "", "", "", false
+		}
+		// other --flag=value options are silently accepted
 	}
+
+	args = args[flagsConsumed:]
 
 	if len(args) == 0 {
-		return "", "", "", "", false
+		return "", "", "", "", "", false
 	}
 
-	if color != "" {
+	hasColor := color != ""
+	if hasColor {
 		switch len(args) {
 		case 1:
-			return color, "", args[0], "standard", true
+			return color, "", align, args[0], "standard", true
 		case 2:
 			if isKnownBanner(args[1]) {
-				return color, "", args[0], args[1], true
+				return color, "", align, args[0], args[1], true
 			}
-			return color, args[0], args[1], "standard", true
+			return color, args[0], align, args[1], "standard", true
 		case 3:
 			if isKnownBanner(args[2]) {
-				return color, args[0], args[1], args[2], true
+				return color, args[0], align, args[1], args[2], true
 			}
-			return "", "", "", "", false
+			return "", "", "", "", "", false
 		}
-		return "", "", "", "", false
+		return "", "", "", "", "", false
 	}
 
 	switch len(args) {
 	case 1:
-		return "", "", args[0], "standard", true
+		return "", "", align, args[0], "standard", true
 	case 2:
 		if isKnownBanner(args[1]) {
-			return "", "", args[0], args[1], true
+			return "", "", align, args[0], args[1], true
 		}
-		return "", "", "", "", false
+		return "", "", "", "", "", false
 	}
-	return "", "", "", "", false
+	return "", "", "", "", "", false
 }
 
 func isKnownBanner(name string) bool {
@@ -271,6 +293,149 @@ func renderArtColor(input string, banner [95][8]string, colorCode, substr string
 				b.WriteString(resetCode)
 			}
 			b.WriteByte('\n')
+		}
+		prevEmpty = false
+	}
+	return b.String()
+}
+
+func charWidth(ch int, banner [95][8]string) int {
+	return len(banner[ch][0])
+}
+
+func textPixelWidth(s string, banner [95][8]string) int {
+	total := 0
+	for _, ch := range s {
+		if ch >= 32 && ch <= 126 {
+			total += len(banner[ch-32][0])
+		}
+	}
+	return total
+}
+
+func renderSegmentLeft(segment string, banner [95][8]string) string {
+	var b strings.Builder
+	for line := range 8 {
+		for _, ch := range segment {
+			if ch >= 32 && ch <= 126 {
+				b.WriteString(banner[ch-32][line])
+			}
+		}
+		b.WriteByte('\n')
+	}
+	return b.String()
+}
+
+func renderSegmentRight(segment string, banner [95][8]string, termWidth int) string {
+	spaceWidth := charWidth(0, banner)
+	totalWidth := textPixelWidth(segment, banner)
+	padCount := (termWidth - totalWidth) / spaceWidth
+	if padCount < 0 {
+		padCount = 0
+	}
+	var b strings.Builder
+	for line := range 8 {
+		for range padCount {
+			b.WriteString(banner[0][line])
+		}
+		for _, ch := range segment {
+			if ch >= 32 && ch <= 126 {
+				b.WriteString(banner[ch-32][line])
+			}
+		}
+		b.WriteByte('\n')
+	}
+	return b.String()
+}
+
+func renderSegmentCenter(segment string, banner [95][8]string, termWidth int) string {
+	spaceWidth := charWidth(0, banner)
+	totalWidth := textPixelWidth(segment, banner)
+	padCount := (termWidth - totalWidth) / (2 * spaceWidth)
+	if padCount < 0 {
+		padCount = 0
+	}
+	var b strings.Builder
+	for line := range 8 {
+		for range padCount {
+			b.WriteString(banner[0][line])
+		}
+		for _, ch := range segment {
+			if ch >= 32 && ch <= 126 {
+				b.WriteString(banner[ch-32][line])
+			}
+		}
+		b.WriteByte('\n')
+	}
+	return b.String()
+}
+
+func renderSegmentJustify(segment string, banner [95][8]string, termWidth int) string {
+	words := strings.Fields(segment)
+	if len(words) <= 1 {
+		return renderSegmentLeft(segment, banner)
+	}
+	spaceWidth := charWidth(0, banner)
+	totalWordsWidth := 0
+	for _, word := range words {
+		totalWordsWidth += textPixelWidth(word, banner)
+	}
+	availableForSpaces := termWidth - totalWordsWidth
+	gaps := len(words) - 1
+	totalSpaces := availableForSpaces / spaceWidth
+	if totalSpaces < gaps {
+		totalSpaces = gaps
+	}
+	baseSpaces := totalSpaces / gaps
+	extraSpaces := totalSpaces % gaps
+	var b strings.Builder
+	for line := range 8 {
+		for i, word := range words {
+			for _, ch := range word {
+				if ch >= 32 && ch <= 126 {
+					b.WriteString(banner[ch-32][line])
+				}
+			}
+			if i < len(words)-1 {
+				spaces := baseSpaces
+				if i < extraSpaces {
+					spaces++
+				}
+				for range spaces {
+					b.WriteString(banner[0][line])
+				}
+			}
+		}
+		b.WriteByte('\n')
+	}
+	return b.String()
+}
+
+func renderArtAligned(input string, banner [95][8]string, align string, termWidth int) string {
+	if input == "" {
+		return ""
+	}
+	input = strings.ReplaceAll(input, "\\n", "\n")
+	segments := strings.Split(input, "\n")
+	var b strings.Builder
+	prevEmpty := false
+	for _, seg := range segments {
+		if seg == "" {
+			if !prevEmpty {
+				b.WriteByte('\n')
+				prevEmpty = true
+			}
+			continue
+		}
+		switch align {
+		case "right":
+			b.WriteString(renderSegmentRight(seg, banner, termWidth))
+		case "center":
+			b.WriteString(renderSegmentCenter(seg, banner, termWidth))
+		case "justify":
+			b.WriteString(renderSegmentJustify(seg, banner, termWidth))
+		default:
+			b.WriteString(renderSegmentLeft(seg, banner))
 		}
 		prevEmpty = false
 	}

@@ -8,10 +8,11 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
+		printUsage()
 		return
 	}
 
-	color, substr, input, banner, ok := parseArgs(os.Args[1:])
+	color, substr, align, input, banner, ok := parseArgs(os.Args[1:])
 	if !ok {
 		printUsage()
 		return
@@ -26,18 +27,20 @@ func main() {
 
 	bannerData := parseBanner(string(data))
 
+	termWidth := getTerminalWidth()
+
 	if color != "" {
 		colorCode := parseColor(color)
 		result := renderArtColor(input, bannerData, colorCode, substr)
 		fmt.Print(result)
 	} else {
-		result := renderArt(input, bannerData)
+		result := renderArtAligned(input, bannerData, align, termWidth)
 		fmt.Print(result)
 	}
 }
 
 func printUsage() {
-	fmt.Println("Usage: go run . [STRING] [BANNER]")
+	fmt.Println("Usage: go run . [OPTION] [STRING] [BANNER]")
 	fmt.Println()
-	fmt.Println("EX: go run . something standard")
+	fmt.Println("EX: go run . --align=right something standard")
 }

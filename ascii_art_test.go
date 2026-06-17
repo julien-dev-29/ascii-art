@@ -491,70 +491,70 @@ func TestParseColor_White(t *testing.T) {
 }
 
 func TestParseArgs_NoArgs(t *testing.T) {
-	_, _, _, _, ok := parseArgs([]string{})
+	_, _, _, _, _, ok := parseArgs([]string{})
 	if ok {
 		t.Errorf("expected false for empty args")
 	}
 }
 
 func TestParseArgs_JustString(t *testing.T) {
-	color, substr, input, banner, ok := parseArgs([]string{"hello"})
+	color, substr, _, input, banner, ok := parseArgs([]string{"hello"})
 	if !ok || color != "" || substr != "" || input != "hello" || banner != "standard" {
 		t.Errorf("got color=%q substr=%q input=%q banner=%q ok=%v", color, substr, input, banner, ok)
 	}
 }
 
 func TestParseArgs_StringAndBanner(t *testing.T) {
-	color, substr, input, banner, ok := parseArgs([]string{"hello", "shadow"})
+	color, substr, _, input, banner, ok := parseArgs([]string{"hello", "shadow"})
 	if !ok || color != "" || substr != "" || input != "hello" || banner != "shadow" {
 		t.Errorf("got color=%q substr=%q input=%q banner=%q ok=%v", color, substr, input, banner, ok)
 	}
 }
 
 func TestParseArgs_ColorAndString(t *testing.T) {
-	color, substr, input, banner, ok := parseArgs([]string{"--color=red", "hello"})
+	color, substr, _, input, banner, ok := parseArgs([]string{"--color=red", "hello"})
 	if !ok || color != "red" || substr != "" || input != "hello" || banner != "standard" {
 		t.Errorf("got color=%q substr=%q input=%q banner=%q ok=%v", color, substr, input, banner, ok)
 	}
 }
 
 func TestParseArgs_ColorSubstrAndString(t *testing.T) {
-	color, substr, input, banner, ok := parseArgs([]string{"--color=red", "ll", "hello"})
+	color, substr, _, input, banner, ok := parseArgs([]string{"--color=red", "ll", "hello"})
 	if !ok || color != "red" || substr != "ll" || input != "hello" || banner != "standard" {
 		t.Errorf("got color=%q substr=%q input=%q banner=%q ok=%v", color, substr, input, banner, ok)
 	}
 }
 
 func TestParseArgs_ColorSubstrStringAndBanner(t *testing.T) {
-	color, substr, input, banner, ok := parseArgs([]string{"--color=red", "ll", "hello", "thinkertoy"})
+	color, substr, _, input, banner, ok := parseArgs([]string{"--color=red", "ll", "hello", "thinkertoy"})
 	if !ok || color != "red" || substr != "ll" || input != "hello" || banner != "thinkertoy" {
 		t.Errorf("got color=%q substr=%q input=%q banner=%q ok=%v", color, substr, input, banner, ok)
 	}
 }
 
 func TestParseArgs_ColorStringAndBanner(t *testing.T) {
-	color, substr, input, banner, ok := parseArgs([]string{"--color=red", "hello", "shadow"})
+	color, substr, _, input, banner, ok := parseArgs([]string{"--color=red", "hello", "shadow"})
 	if !ok || color != "red" || substr != "" || input != "hello" || banner != "shadow" {
 		t.Errorf("got color=%q substr=%q input=%q banner=%q ok=%v", color, substr, input, banner, ok)
 	}
 }
 
 func TestParseArgs_InvalidColorFlag(t *testing.T) {
-	_, _, _, _, ok := parseArgs([]string{"--color", "hello"})
+	_, _, _, _, _, ok := parseArgs([]string{"--color", "hello"})
 	if ok {
 		t.Errorf("expected false for '--color' without =")
 	}
 }
 
 func TestParseArgs_EmptyColorValue(t *testing.T) {
-	_, _, _, _, ok := parseArgs([]string{"--color=", "hello"})
+	_, _, _, _, _, ok := parseArgs([]string{"--color=", "hello"})
 	if ok {
 		t.Errorf("expected false for empty color value")
 	}
 }
 
 func TestParseArgs_TooManyArgs(t *testing.T) {
-	_, _, _, _, ok := parseArgs([]string{"--color=red", "a", "b", "c", "d"})
+	_, _, _, _, _, ok := parseArgs([]string{"--color=red", "a", "b", "c", "d"})
 	if ok {
 		t.Errorf("expected false for too many args")
 	}
@@ -587,15 +587,162 @@ func TestRenderArtColor_KitExample(t *testing.T) {
 }
 
 func TestParseArgs_InvalidBannerNotPopped(t *testing.T) {
-	_, _, _, _, ok := parseArgs([]string{"hello", "shadowy"})
+	_, _, _, _, _, ok := parseArgs([]string{"hello", "shadowy"})
 	if ok {
 		t.Errorf("expected false for unknown banner 'shadowy'")
 	}
 }
 
 func TestParseArgs_StringWithValidBanner(t *testing.T) {
-	color, substr, input, banner, ok := parseArgs([]string{"hello", "shadow"})
+	color, substr, _, input, banner, ok := parseArgs([]string{"hello", "shadow"})
 	if !ok || color != "" || substr != "" || input != "hello" || banner != "shadow" {
 		t.Errorf("got color=%q substr=%q input=%q banner=%q ok=%v", color, substr, input, banner, ok)
+	}
+}
+
+func TestParseArgs_AlignFlag(t *testing.T) {
+	_, _, align, input, banner, ok := parseArgs([]string{"--align=center", "hello"})
+	if !ok || align != "center" || input != "hello" || banner != "standard" {
+		t.Errorf("got align=%q input=%q banner=%q ok=%v", align, input, banner, ok)
+	}
+}
+
+func TestParseArgs_AlignFlagWithBanner(t *testing.T) {
+	_, _, align, input, banner, ok := parseArgs([]string{"--align=right", "hello", "shadow"})
+	if !ok || align != "right" || input != "hello" || banner != "shadow" {
+		t.Errorf("got align=%q input=%q banner=%q ok=%v", align, input, banner, ok)
+	}
+}
+
+func TestParseArgs_AlignAndColorFlags(t *testing.T) {
+	_, _, align, input, banner, ok := parseArgs([]string{"--align=center", "--color=red", "hello"})
+	if !ok || align != "center" || input != "hello" || banner != "standard" {
+		t.Errorf("got align=%q input=%q banner=%q ok=%v", align, input, banner, ok)
+	}
+}
+
+func TestParseArgs_ColorAndAlignFlags(t *testing.T) {
+	_, _, align, input, banner, ok := parseArgs([]string{"--color=red", "--align=center", "hello"})
+	if !ok || align != "center" || input != "hello" || banner != "standard" {
+		t.Errorf("got align=%q input=%q banner=%q ok=%v", align, input, banner, ok)
+	}
+}
+
+func TestParseArgs_InvalidAlignFlagFormat(t *testing.T) {
+	_, _, _, _, _, ok := parseArgs([]string{"--align", "hello"})
+	if ok {
+		t.Errorf("expected false for '--align' without =")
+	}
+}
+
+func TestCharWidth(t *testing.T) {
+	banner := loadStdTestBanner(t)
+	w := charWidth(0, banner)
+	if w <= 0 {
+		t.Errorf("expected positive width for space, got %d", w)
+	}
+}
+
+func TestTextPixelWidth(t *testing.T) {
+	banner := loadStdTestBanner(t)
+	w := textPixelWidth("A", banner)
+	if w <= 0 {
+		t.Errorf("expected positive width for 'A', got %d", w)
+	}
+}
+
+func TestRenderSegmentRight(t *testing.T) {
+	banner := loadStdTestBanner(t)
+	termWidth := 80
+	result := renderSegmentRight("A", banner, termWidth)
+	lines := strings.Split(strings.TrimSuffix(result, "\n"), "\n")
+	if len(lines) != 8 {
+		t.Fatalf("expected 8 lines, got %d", len(lines))
+	}
+	for _, line := range lines {
+		if len(line) > termWidth {
+			t.Errorf("line length %d exceeds terminal width %d", len(line), termWidth)
+		}
+	}
+}
+
+func TestRenderSegmentCenter(t *testing.T) {
+	banner := loadStdTestBanner(t)
+	termWidth := 80
+	result := renderSegmentCenter("A", banner, termWidth)
+	lines := strings.Split(strings.TrimSuffix(result, "\n"), "\n")
+	if len(lines) != 8 {
+		t.Fatalf("expected 8 lines, got %d", len(lines))
+	}
+	for _, line := range lines {
+		if len(line) > termWidth {
+			t.Errorf("line length %d exceeds terminal width %d", len(line), termWidth)
+		}
+	}
+}
+
+func TestRenderSegmentJustify(t *testing.T) {
+	banner := loadStdTestBanner(t)
+	termWidth := 80
+	result := renderSegmentJustify("A B", banner, termWidth)
+	lines := strings.Split(strings.TrimSuffix(result, "\n"), "\n")
+	if len(lines) != 8 {
+		t.Fatalf("expected 8 lines, got %d", len(lines))
+	}
+	for _, line := range lines {
+		if len(line) > termWidth {
+			t.Errorf("line length %d exceeds terminal width %d", len(line), termWidth)
+		}
+	}
+}
+
+func TestRenderSegmentJustifySingleWord(t *testing.T) {
+	banner := loadStdTestBanner(t)
+	justify := renderSegmentJustify("Hello", banner, 80)
+	left := renderSegmentLeft("Hello", banner)
+	if justify != left {
+		t.Errorf("justify with single word should match left alignment")
+	}
+}
+
+func TestRenderArtAligned_DefaultIsLeft(t *testing.T) {
+	banner := loadStdTestBanner(t)
+	got := renderArtAligned("Hello", banner, "", 80)
+	want := renderArt("Hello", banner)
+	if got != want {
+		t.Errorf("default align should produce left-aligned output")
+	}
+}
+
+func TestRenderArtAligned_Left(t *testing.T) {
+	banner := loadStdTestBanner(t)
+	got := renderArtAligned("Hello", banner, "left", 80)
+	want := renderArt("Hello", banner)
+	if got != want {
+		t.Errorf("left align should match renderArt")
+	}
+}
+
+func TestRenderArtAligned_Empty(t *testing.T) {
+	banner := loadStdTestBanner(t)
+	got := renderArtAligned("", banner, "center", 80)
+	if got != "" {
+		t.Errorf("expected empty result for empty input, got %q", got)
+	}
+}
+
+func TestRenderArtAligned_Newline(t *testing.T) {
+	banner := loadStdTestBanner(t)
+	got := renderArtAligned("\\n", banner, "right", 80)
+	want := "\n"
+	if got != want {
+		t.Errorf("expected newline for newline input, got %q", got)
+	}
+}
+
+func TestGetTerminalWidth(t *testing.T) {
+	w := getTerminalWidth()
+	if w <= 0 {
+		t.Errorf("expected positive terminal width, got %d", w)
 	}
 }
