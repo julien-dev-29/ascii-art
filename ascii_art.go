@@ -53,10 +53,10 @@ func renderArt(input string, banner [95][8]string) string {
 	return b.String()
 }
 
-func parseArgs(args []string) (color, substr, align, input, banner string, ok bool) {
+func parseArgs(args []string) (color, substr, align, input, banner, outputFile string, ok bool) {
 	align = "left"
 	if len(args) == 0 {
-		return "", "", "", "", "", false
+		return "", "", "", "", "", "", false
 	}
 
 	flagsConsumed := 0
@@ -68,21 +68,31 @@ func parseArgs(args []string) (color, substr, align, input, banner string, ok bo
 
 		if strings.HasPrefix(a, "--color=") {
 			if color != "" {
-				return "", "", "", "", "", false
+				return "", "", "", "", "", "", false
 			}
 			color = a[len("--color="):]
 			if color == "" {
-				return "", "", "", "", "", false
+				return "", "", "", "", "", "", false
 			}
 		} else if strings.HasPrefix(a, "--align=") {
 			align = a[len("--align="):]
 			if align == "" {
-				return "", "", "", "", "", false
+				return "", "", "", "", "", "", false
 			}
+		} else if strings.HasPrefix(a, "--output=") {
+			if outputFile != "" {
+				return "", "", "", "", "", "", false
+			}
+			outputFile = a[len("--output="):]
+			if outputFile == "" {
+				return "", "", "", "", "", "", false
+			}
+		} else if strings.HasPrefix(a, "--output") {
+			return "", "", "", "", "", "", false
 		} else if strings.HasPrefix(a, "--align") || strings.HasPrefix(a, "--color") {
-			return "", "", "", "", "", false
+			return "", "", "", "", "", "", false
 		} else if !strings.Contains(a, "=") {
-			return "", "", "", "", "", false
+			return "", "", "", "", "", "", false
 		}
 		// other --flag=value options are silently accepted
 	}
@@ -90,38 +100,38 @@ func parseArgs(args []string) (color, substr, align, input, banner string, ok bo
 	args = args[flagsConsumed:]
 
 	if len(args) == 0 {
-		return "", "", "", "", "", false
+		return "", "", "", "", "", "", false
 	}
 
 	hasColor := color != ""
 	if hasColor {
 		switch len(args) {
 		case 1:
-			return color, "", align, args[0], "standard", true
+			return color, "", align, args[0], "standard", outputFile, true
 		case 2:
 			if isKnownBanner(args[1]) {
-				return color, "", align, args[0], args[1], true
+				return color, "", align, args[0], args[1], outputFile, true
 			}
-			return color, args[0], align, args[1], "standard", true
+			return color, args[0], align, args[1], "standard", outputFile, true
 		case 3:
 			if isKnownBanner(args[2]) {
-				return color, args[0], align, args[1], args[2], true
+				return color, args[0], align, args[1], args[2], outputFile, true
 			}
-			return "", "", "", "", "", false
+			return "", "", "", "", "", "", false
 		}
-		return "", "", "", "", "", false
+		return "", "", "", "", "", "", false
 	}
 
 	switch len(args) {
 	case 1:
-		return "", "", align, args[0], "standard", true
+		return "", "", align, args[0], "standard", outputFile, true
 	case 2:
 		if isKnownBanner(args[1]) {
-			return "", "", align, args[0], args[1], true
+			return "", "", align, args[0], args[1], outputFile, true
 		}
-		return "", "", "", "", "", false
+		return "", "", "", "", "", "", false
 	}
-	return "", "", "", "", "", false
+	return "", "", "", "", "", "", false
 }
 
 func isKnownBanner(name string) bool {

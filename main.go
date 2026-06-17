@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -12,7 +13,25 @@ func main() {
 		return
 	}
 
-	color, substr, align, input, banner, ok := parseArgs(os.Args[1:])
+	arg := os.Args[1]
+	if strings.HasPrefix(arg, "--reverse=") {
+		fileName := arg[len("--reverse="):]
+		if fileName == "" {
+			printUsage()
+			return
+		}
+		data, err := fs.ReadFile(os.DirFS("."), fileName)
+		if err != nil {
+			printUsage()
+			return
+		}
+		banners := loadBanners()
+		result := reverseArt(string(data), banners...)
+		fmt.Print(result)
+		return
+	}
+
+	color, substr, align, input, banner, outputFile, ok := parseArgs(os.Args[1:])
 	if !ok {
 		printUsage()
 		return
@@ -29,18 +48,23 @@ func main() {
 
 	termWidth := getTerminalWidth()
 
+	var result string
 	if color != "" {
 		colorCode := parseColor(color)
-		result := renderArtColor(input, bannerData, colorCode, substr)
-		fmt.Print(result)
+		result = renderArtColor(input, bannerData, colorCode, substr)
 	} else {
-		result := renderArtAligned(input, bannerData, align, termWidth)
+		result = renderArtAligned(input, bannerData, align, termWidth)
+	}
+
+	if outputFile != "" {
+		os.WriteFile(outputFile, []byte(result), 0644)
+	} else {
 		fmt.Print(result)
 	}
 }
 
 func printUsage() {
-	fmt.Println("Usage: go run . [OPTION] [STRING] [BANNER]")
+	fmt.Println("Usage: go run . [OPTION]")
 	fmt.Println()
-	fmt.Println("EX: go run . --align=right something standard")
+	fmt.Println("EX: go run . --reverse=<fileName>")
 }

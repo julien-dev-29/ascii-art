@@ -491,70 +491,70 @@ func TestParseColor_White(t *testing.T) {
 }
 
 func TestParseArgs_NoArgs(t *testing.T) {
-	_, _, _, _, _, ok := parseArgs([]string{})
+	_, _, _, _, _, _, ok := parseArgs([]string{})
 	if ok {
 		t.Errorf("expected false for empty args")
 	}
 }
 
 func TestParseArgs_JustString(t *testing.T) {
-	color, substr, _, input, banner, ok := parseArgs([]string{"hello"})
+	color, substr, _, input, banner, _, ok := parseArgs([]string{"hello"})
 	if !ok || color != "" || substr != "" || input != "hello" || banner != "standard" {
 		t.Errorf("got color=%q substr=%q input=%q banner=%q ok=%v", color, substr, input, banner, ok)
 	}
 }
 
 func TestParseArgs_StringAndBanner(t *testing.T) {
-	color, substr, _, input, banner, ok := parseArgs([]string{"hello", "shadow"})
+	color, substr, _, input, banner, _, ok := parseArgs([]string{"hello", "shadow"})
 	if !ok || color != "" || substr != "" || input != "hello" || banner != "shadow" {
 		t.Errorf("got color=%q substr=%q input=%q banner=%q ok=%v", color, substr, input, banner, ok)
 	}
 }
 
 func TestParseArgs_ColorAndString(t *testing.T) {
-	color, substr, _, input, banner, ok := parseArgs([]string{"--color=red", "hello"})
+	color, substr, _, input, banner, _, ok := parseArgs([]string{"--color=red", "hello"})
 	if !ok || color != "red" || substr != "" || input != "hello" || banner != "standard" {
 		t.Errorf("got color=%q substr=%q input=%q banner=%q ok=%v", color, substr, input, banner, ok)
 	}
 }
 
 func TestParseArgs_ColorSubstrAndString(t *testing.T) {
-	color, substr, _, input, banner, ok := parseArgs([]string{"--color=red", "ll", "hello"})
+	color, substr, _, input, banner, _, ok := parseArgs([]string{"--color=red", "ll", "hello"})
 	if !ok || color != "red" || substr != "ll" || input != "hello" || banner != "standard" {
 		t.Errorf("got color=%q substr=%q input=%q banner=%q ok=%v", color, substr, input, banner, ok)
 	}
 }
 
 func TestParseArgs_ColorSubstrStringAndBanner(t *testing.T) {
-	color, substr, _, input, banner, ok := parseArgs([]string{"--color=red", "ll", "hello", "thinkertoy"})
+	color, substr, _, input, banner, _, ok := parseArgs([]string{"--color=red", "ll", "hello", "thinkertoy"})
 	if !ok || color != "red" || substr != "ll" || input != "hello" || banner != "thinkertoy" {
 		t.Errorf("got color=%q substr=%q input=%q banner=%q ok=%v", color, substr, input, banner, ok)
 	}
 }
 
 func TestParseArgs_ColorStringAndBanner(t *testing.T) {
-	color, substr, _, input, banner, ok := parseArgs([]string{"--color=red", "hello", "shadow"})
+	color, substr, _, input, banner, _, ok := parseArgs([]string{"--color=red", "hello", "shadow"})
 	if !ok || color != "red" || substr != "" || input != "hello" || banner != "shadow" {
 		t.Errorf("got color=%q substr=%q input=%q banner=%q ok=%v", color, substr, input, banner, ok)
 	}
 }
 
 func TestParseArgs_InvalidColorFlag(t *testing.T) {
-	_, _, _, _, _, ok := parseArgs([]string{"--color", "hello"})
+	_, _, _, _, _, _, ok := parseArgs([]string{"--color", "hello"})
 	if ok {
 		t.Errorf("expected false for '--color' without =")
 	}
 }
 
 func TestParseArgs_EmptyColorValue(t *testing.T) {
-	_, _, _, _, _, ok := parseArgs([]string{"--color=", "hello"})
+	_, _, _, _, _, _, ok := parseArgs([]string{"--color=", "hello"})
 	if ok {
 		t.Errorf("expected false for empty color value")
 	}
 }
 
 func TestParseArgs_TooManyArgs(t *testing.T) {
-	_, _, _, _, _, ok := parseArgs([]string{"--color=red", "a", "b", "c", "d"})
+	_, _, _, _, _, _, ok := parseArgs([]string{"--color=red", "a", "b", "c", "d"})
 	if ok {
 		t.Errorf("expected false for too many args")
 	}
@@ -587,51 +587,107 @@ func TestRenderArtColor_KitExample(t *testing.T) {
 }
 
 func TestParseArgs_InvalidBannerNotPopped(t *testing.T) {
-	_, _, _, _, _, ok := parseArgs([]string{"hello", "shadowy"})
+	_, _, _, _, _, _, ok := parseArgs([]string{"hello", "shadowy"})
 	if ok {
 		t.Errorf("expected false for unknown banner 'shadowy'")
 	}
 }
 
 func TestParseArgs_StringWithValidBanner(t *testing.T) {
-	color, substr, _, input, banner, ok := parseArgs([]string{"hello", "shadow"})
+	color, substr, _, input, banner, _, ok := parseArgs([]string{"hello", "shadow"})
 	if !ok || color != "" || substr != "" || input != "hello" || banner != "shadow" {
 		t.Errorf("got color=%q substr=%q input=%q banner=%q ok=%v", color, substr, input, banner, ok)
 	}
 }
 
 func TestParseArgs_AlignFlag(t *testing.T) {
-	_, _, align, input, banner, ok := parseArgs([]string{"--align=center", "hello"})
+	_, _, align, input, banner, _, ok := parseArgs([]string{"--align=center", "hello"})
 	if !ok || align != "center" || input != "hello" || banner != "standard" {
 		t.Errorf("got align=%q input=%q banner=%q ok=%v", align, input, banner, ok)
 	}
 }
 
 func TestParseArgs_AlignFlagWithBanner(t *testing.T) {
-	_, _, align, input, banner, ok := parseArgs([]string{"--align=right", "hello", "shadow"})
+	_, _, align, input, banner, _, ok := parseArgs([]string{"--align=right", "hello", "shadow"})
 	if !ok || align != "right" || input != "hello" || banner != "shadow" {
 		t.Errorf("got align=%q input=%q banner=%q ok=%v", align, input, banner, ok)
 	}
 }
 
 func TestParseArgs_AlignAndColorFlags(t *testing.T) {
-	_, _, align, input, banner, ok := parseArgs([]string{"--align=center", "--color=red", "hello"})
+	_, _, align, input, banner, _, ok := parseArgs([]string{"--align=center", "--color=red", "hello"})
 	if !ok || align != "center" || input != "hello" || banner != "standard" {
 		t.Errorf("got align=%q input=%q banner=%q ok=%v", align, input, banner, ok)
 	}
 }
 
 func TestParseArgs_ColorAndAlignFlags(t *testing.T) {
-	_, _, align, input, banner, ok := parseArgs([]string{"--color=red", "--align=center", "hello"})
+	_, _, align, input, banner, _, ok := parseArgs([]string{"--color=red", "--align=center", "hello"})
 	if !ok || align != "center" || input != "hello" || banner != "standard" {
 		t.Errorf("got align=%q input=%q banner=%q ok=%v", align, input, banner, ok)
 	}
 }
 
 func TestParseArgs_InvalidAlignFlagFormat(t *testing.T) {
-	_, _, _, _, _, ok := parseArgs([]string{"--align", "hello"})
+	_, _, _, _, _, _, ok := parseArgs([]string{"--align", "hello"})
 	if ok {
 		t.Errorf("expected false for '--align' without =")
+	}
+}
+
+func TestParseArgs_OutputFlag(t *testing.T) {
+	color, substr, _, input, banner, outputFile, ok := parseArgs([]string{"--output=out.txt", "hello", "standard"})
+	if !ok || outputFile != "out.txt" || input != "hello" || banner != "standard" || color != "" || substr != "" {
+		t.Errorf("got outputFile=%q input=%q banner=%q color=%q substr=%q ok=%v", outputFile, input, banner, color, substr, ok)
+	}
+}
+
+func TestParseArgs_OutputFlagJustString(t *testing.T) {
+	_, _, _, input, banner, outputFile, ok := parseArgs([]string{"--output=out.txt", "hello"})
+	if !ok || outputFile != "out.txt" || input != "hello" || banner != "standard" {
+		t.Errorf("got outputFile=%q input=%q banner=%q ok=%v", outputFile, input, banner, ok)
+	}
+}
+
+func TestParseArgs_OutputFlagWithBanner(t *testing.T) {
+	_, _, _, input, banner, outputFile, ok := parseArgs([]string{"--output=out.txt", "hello", "shadow"})
+	if !ok || outputFile != "out.txt" || input != "hello" || banner != "shadow" {
+		t.Errorf("got outputFile=%q input=%q banner=%q ok=%v", outputFile, input, banner, ok)
+	}
+}
+
+func TestParseArgs_OutputFlagWithColor(t *testing.T) {
+	color, _, _, input, banner, outputFile, ok := parseArgs([]string{"--output=out.txt", "--color=red", "hello"})
+	if !ok || outputFile != "out.txt" || color != "red" || input != "hello" || banner != "standard" {
+		t.Errorf("got outputFile=%q color=%q input=%q banner=%q ok=%v", outputFile, color, input, banner, ok)
+	}
+}
+
+func TestParseArgs_OutputFlagWithAlign(t *testing.T) {
+	_, _, align, input, banner, outputFile, ok := parseArgs([]string{"--output=out.txt", "--align=center", "hello"})
+	if !ok || outputFile != "out.txt" || align != "center" || input != "hello" || banner != "standard" {
+		t.Errorf("got outputFile=%q align=%q input=%q banner=%q ok=%v", outputFile, align, input, banner, ok)
+	}
+}
+
+func TestParseArgs_OutputFlagInvalidNoEqual(t *testing.T) {
+	_, _, _, _, _, _, ok := parseArgs([]string{"--output", "hello"})
+	if ok {
+		t.Errorf("expected false for '--output' without =")
+	}
+}
+
+func TestParseArgs_OutputFlagEmptyValue(t *testing.T) {
+	_, _, _, _, _, _, ok := parseArgs([]string{"--output=", "hello"})
+	if ok {
+		t.Errorf("expected false for empty output value")
+	}
+}
+
+func TestParseArgs_OutputFlagDuplicate(t *testing.T) {
+	_, _, _, _, _, _, ok := parseArgs([]string{"--output=a.txt", "--output=b.txt", "hello"})
+	if ok {
+		t.Errorf("expected false for duplicate --output flags")
 	}
 }
 
@@ -744,5 +800,126 @@ func TestGetTerminalWidth(t *testing.T) {
 	w := getTerminalWidth()
 	if w <= 0 {
 		t.Errorf("expected positive terminal width, got %d", w)
+	}
+}
+
+func loadAllBannersForTest(t *testing.T) [][95][8]string {
+	t.Helper()
+	var banners [][95][8]string
+	for _, name := range []string{"standard", "shadow", "thinkertoy"} {
+		data, err := os.ReadFile(name + ".txt")
+		if err != nil {
+			t.Fatalf("failed to load %s: %v", name, err)
+		}
+		banners = append(banners, parseBanner(string(data)))
+	}
+	return banners
+}
+
+func TestReverseArt_RoundTripStandard(t *testing.T) {
+	banners := loadAllBannersForTest(t)
+	inputs := []string{"hello", "Hello World", "42", "{Hello!}", "abc123", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"}
+	for _, input := range inputs {
+		art := renderArt(input, banners[0])
+		result := reverseArt(art, banners...)
+		if result != input {
+			t.Errorf("round-trip failed for %q: got %q", input, result)
+		}
+	}
+}
+
+func TestReverseArt_RoundTripShadow(t *testing.T) {
+	banners := loadAllBannersForTest(t)
+	inputs := []string{"hello", "Hello World", "42", "abc"}
+	for _, input := range inputs {
+		art := renderArt(input, banners[1])
+		result := reverseArt(art, banners...)
+		if result != input {
+			t.Errorf("shadow round-trip failed for %q: got %q", input, result)
+		}
+	}
+}
+
+func TestReverseArt_RoundTripThinkertoy(t *testing.T) {
+	banners := loadAllBannersForTest(t)
+	inputs := []string{"hello", "Hello World", "42"}
+	for _, input := range inputs {
+		art := renderArt(input, banners[2])
+		result := reverseArt(art, banners...)
+		if result != input {
+			t.Errorf("thinkertoy round-trip failed for %q: got %q", input, result)
+		}
+	}
+}
+
+func TestReverseArt_Multiline(t *testing.T) {
+	banners := loadAllBannersForTest(t)
+	inputs := []string{"hello\nthere", "a\nb\nc", "Hello\nWorld"}
+	for _, input := range inputs {
+		art := renderArt(input, banners[0])
+		result := reverseArt(art, banners...)
+		if result != input {
+			t.Errorf("multiline round-trip failed for %q: got %q", input, result)
+		}
+	}
+}
+
+func TestReverseArt_EmptyData(t *testing.T) {
+	banners := loadAllBannersForTest(t)
+	result := reverseArt("", banners...)
+	if result != "" {
+		t.Errorf("expected empty for empty data, got %q", result)
+	}
+
+	art := renderArt("", banners[0])
+	result = reverseArt(art, banners...)
+	if result != "" {
+		t.Errorf("expected empty for empty art, got %q", result)
+	}
+}
+
+func TestReverseArt_WithNewline(t *testing.T) {
+	banners := loadAllBannersForTest(t)
+	input := "hello\nthere"
+	art := renderArt(input, banners[0])
+	result := reverseArt(art, banners...)
+	if result != input {
+		t.Errorf("round-trip failed for %q: got %q", input, result)
+	}
+}
+
+func TestReverseArt_DetectsBanner(t *testing.T) {
+	banners := loadAllBannersForTest(t)
+	inputs := []struct {
+		text   string
+		shadow bool
+	}{
+		{"hello", false},
+		{"Hello", false},
+		{"Hello World", false},
+	}
+	for _, tc := range inputs {
+		art := renderArt(tc.text, banners[0])
+		result := reverseArt(art, banners...)
+		if result != tc.text {
+			t.Errorf("standard detection failed for %q: got %q", tc.text, result)
+		}
+	}
+}
+
+func TestReverseArt_FileNotFound(t *testing.T) {
+	_, err := os.ReadFile("nonexistent.txt")
+	if err == nil {
+		t.Error("expected error for nonexistent file")
+	}
+}
+
+func TestReverseArt_SpecialChars(t *testing.T) {
+	banners := loadAllBannersForTest(t)
+	input := "{Hello!} @#$%^&*()"
+	art := renderArt(input, banners[0])
+	result := reverseArt(art, banners...)
+	if result != input {
+		t.Errorf("special chars round-trip failed: got %q", result)
 	}
 }
