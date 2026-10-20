@@ -14,5 +14,5 @@ func main() {
 		fmt.Println("Too much arguments")
 		return
 	}
-	fmt.Println(os.Args[1])
+	
 }

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"os"
 	"reflect"
 	"testing"
 )
@@ -19,20 +18,53 @@ import (
 // 	}
 // }
 
-func Test_splitByLine(t *testing.T) {
-	testData, _ := os.ReadFile("test.txt")
+func Test_getLines(t *testing.T) {
 	tests := []struct {
 		name string
-		in   []byte
+		in   string
 		want []string
 	}{
-		{"test standard", testData, []string{"yolo\r\n", "les\r\n", "kikis!"}},
+		{"test standard", "test.txt", []string{"yolo les kikis!", "yala les kakas?", "yili les kokos..."}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := splitByLine(tt.in); !reflect.DeepEqual(got, tt.want) {
+			if got := getLines(tt.in); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("got = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func Test_getPosition(t *testing.T) {
+
+	tests := []struct {
+		name string
+		in   byte
+		want int
+	}{
+		{"test a", 'a', 587},
+		{"test b", 'b', 596},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := getPosition(tt.in)
+
+			if got != tt.want {
+				t.Errorf("got %v want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_getALines(t *testing.T) {
+	tests := []struct {
+		name string
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			getALines()
 		})
 	}
 }

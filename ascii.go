@@ -1,17 +1,35 @@
 package main
 
 import (
-	"strings"
+	"bufio"
+	"os"
 )
 
-func getLetterByCodeAscci() {
-
+func getPosition(char byte) int {
+	return (int(char-32) * 855 / 95) + 2
 }
 
-func splitByLine(data []byte) []string {
-	out := make([]string, 0)
-	for line := range strings.Lines(string(data)) {
-		out = append(out, line)
+func getLines(path string) []string {
+	file, err := os.Open(path)
+	if err != nil {
+		panic(err)
 	}
-	return out
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	lines := make([]string, 0)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		lines = append(lines, line)
+	}
+
+	if err := scanner.Err(); err != nil {
+		panic(err)
+	}
+	return lines
+}
+
+func getALines() {
+
 }
