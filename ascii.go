@@ -30,6 +30,21 @@ func getLines(path string) []string {
 	return lines
 }
 
-func getALines() {
+func getCharLines(char byte, lines []string) []string {
+	out := make([]string, 0)
 
+	startIndex := getPosition(char)
+	for i := startIndex - 1; i < startIndex+7; i++ {
+		out = append(out, lines[i])
+	}
+	return out
+}
+
+func getStringLines(s string, lines []string) [][]string {
+	out := make([][]string, 0)
+
+	for _, b := range s {
+		out = append(out, getCharLines(byte(b), lines))
+	}
+	return out
 }

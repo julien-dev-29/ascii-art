@@ -56,15 +56,45 @@ func Test_getPosition(t *testing.T) {
 	}
 }
 
-func Test_getALines(t *testing.T) {
+func Test_getCharLines(t *testing.T) {
+	type args struct {
+		char  byte
+		lines []string
+	}
 	tests := []struct {
 		name string
+		args args
+		want []string
 	}{
-		// TODO: Add test cases.
+		{"test a", args{'a', getLines("standard.txt")}, []string{"        ", "        ", "  __ _  ", " / _` | ", "| (_| | ", " \\__,_| ", "        ", "        "}},
+		{"test b", args{'b', getLines("standard.txt")}, []string{" _      ", "| |     ", "| |__   ", "| '_ \\  ", "| |_) | ", "|_.__/  ", "        ", "        "}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			getALines()
+			if got := getCharLines(tt.args.char, tt.args.lines); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getCharLines() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_getStringLines(t *testing.T) {
+	type args struct {
+		s     string
+		lines []string
+	}
+	tests := []struct {
+		name string
+		args args
+		want [][]string
+	}{
+		{"test yolo", args{"y", getLines("standard.txt")}, [][]string{{"        ", "        ", " _   _  ", "| | | | ", "| |_| | ", " \\__, | ", " __/ /  ", "|___/   "}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getStringLines(tt.args.s, tt.args.lines); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getStringLines() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
