@@ -88,7 +88,10 @@ func Test_getStringLines(t *testing.T) {
 		args args
 		want [][]string
 	}{
-		{"test yolo", args{"y", getLines("standard.txt")}, [][]string{{"        ", "        ", " _   _  ", "| | | | ", "| |_| | ", " \\__, | ", " __/ /  ", "|___/   "}}},
+		{"test yolo", args{"yo", getLines("standard.txt")}, [][]string{
+			{"        ", "        ", " _   _  ", "| | | | ", "| |_| | ", " \\__, | ", " __/ /  ", "|___/   "},
+			{"        ", "        ", "  ___   ", " / _ \\  ", "| (_) | ", " \\___/  ", "        ", "        "},
+		}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

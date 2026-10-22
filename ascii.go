@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 )
 
@@ -43,8 +44,15 @@ func getCharLines(char byte, lines []string) []string {
 func getStringLines(s string, lines []string) [][]string {
 	out := make([][]string, 0)
 
-	for _, b := range s {
-		out = append(out, getCharLines(byte(b), lines))
+	for i, b := range s {
+		if b == '\\' && i+1 < len(s) && s[i+1] == 'n' {
+			fmt.Println("yolo")
+			out = append(out, []string{"\n"})
+		} else if b == 'n' && i-1 >= 0 && s[i-1] == '\\' {
+			continue
+		} else {
+			out = append(out, getCharLines(byte(b), lines))
+		}
 	}
 	return out
 }
