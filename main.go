@@ -6,30 +6,66 @@ import (
 	"strings"
 )
 
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
+
 func main() {
-	if len(os.Args) < 2 {
-		fmt.Println("You must provide a string")
-		return
-	}
-	if len(os.Args) > 2 {
-		fmt.Println("Too much arguments")
-		return
-	}
-	s := os.Args[1]
-	lines := getLines("standard.txt")
-	strLines := strings.Builder{}
-	if containAntiSlashN(s) {
-		words := strings.SplitSeq(s, "\n")
-		for word := range words {
-			getStringLines(word, lines)
+	input := ""
+	banner := "standard"
+	color := ""
+	if len(os.Args) > 1 {
+		if os.Args[1] == "-h" || os.Args[1] == "--help" {
+			fmt.Println("Usage: go run main.go [input] [banner]")
+			fmt.Println("Example: go run main.go \"Hello World\" shadow")
+			return
 		}
-	} else {
-		for i := range 8 {
-			for _, l := range getStringLines(s, lines) {
-				strLines.WriteString(l[i])
+		if after, ok := strings.CutPrefix(os.Args[1], "--color="); ok {
+			color = after
+		}
+		// Si il y a une couleur spécifiée, on la retire des arguments
+		if color != "" {
+			os.Args = append(os.Args[:1], os.Args[2:]...)
+		}
+		//Si il y a un substring de la chaine de caractères a mettre en couleur, on le retire des arguments
+		input = os.Args[1]
+		if len(os.Args) > 2 {
+			banner = os.Args[2]
+		}
+	}
+
+	input = strings.ReplaceAll(input, "\\n", "\n")
+
+	m := parseFile(banner + ".txt")
+
+	if input == "" {
+		return
+	}
+
+	var b strings.Builder
+	segments := strings.SplitSeq(input, "\n")
+	for seg := range segments {
+		if seg == "" {
+			b.WriteByte('\n')
+			continue
+		}
+		for line := range 8 {
+			for _, ch := range seg {
+				if lines, ok := m[rune(ch)]; ok {
+					b.WriteString(lines[line])
+				}
 			}
-			strLines.WriteRune('\n')
+			b.WriteByte('\n')
 		}
 	}
-	fmt.Println(strLines.String())
+	// Display the ASCII art with color if specified
+	if colorCode := getColorCode(color); colorCode != "" {
+		fmt.Print(colorCode)
+	}
+	fmt.Print(b.String())
+	if colorCode := getColorCode(color); colorCode != "" {
+		fmt.Print("\033[0m") // Reset color
+	}
 }
